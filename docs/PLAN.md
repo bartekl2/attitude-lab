@@ -189,7 +189,7 @@ W v1 (6DoF, ramka z dowolnym X) kurs jest nieobserwowalny dla filtrów, więc
 | Dryf [°/min] | nachylenie błędu kursu w czasie (test statyczny) |
 | Czas zbieżności | czas do < 2° po złym starcie |
 | Opóźnienie estymacji [ms] | korelacja wzajemna estymata vs prawda (na syntetycznych) |
-| Latencja | sensor → callback (telefon), telefon → Mac (sync zegarów), `update()` per filtr p50/p99, Mac → render |
+| Latencja | sensor → callback (telefon; zakłada wspólną oś czasu `t_send` i `timestamp` — hipoteza, DO WERYFIKACJI w etapie 3, test V6 w `conventions.md`), telefon → Mac (sync zegarów), `update()` per filtr p50/p99, Mac → render |
 | Jakość strumienia | % strat, jitter, rzeczywista częstotliwość z timestampów sensora |
 
 Wyrównanie ramek (stały offset z pierwszych N sekund lub inicjalizacja z `q_ref`)
@@ -225,9 +225,11 @@ ramek CoreMotion → three.js, zanim powstanie pełny pipeline.
 
 Dokument dla osoby, która nie robiła jeszcze mechaniki ani nawigacji inercyjnej:
 
-- **Rysunki ASCII** ramek: telefon (body), świat (CoreMotion, Z w górę), three.js (Y w górę).
+- **Rysunki ASCII** ramek: telefon (body), świat (CoreMotion, Z pionowa; czy w górę —
+  hipoteza, DO WERYFIKACJI w etapie 3, testy V1–V7 w `conventions.md`), three.js (Y w górę).
 - **Konkretne przykłady**, np. „telefon leży ekranem do góry → akcelerometr Apple'a
-  pokazuje z ≈ −1 g, a po konwersji do specific force +9.81 m/s² w osi z”;
+  pokazuje z ≈ −1 g (hipoteza, DO WERYFIKACJI w etapie 3, testy V1–V7 w `conventions.md`),
+  a po konwersji do specific force +9.81 m/s² w osi z”;
   „obrót o 90° w lewo wokół pionu → kwaternion …”.
 - **Słowniczek:** kwaternion, sprzężenie, ramka body/świat, specific force, bias,
   pochylenie (tilt), kurs (yaw/heading), dryf, podwójne pokrycie (q i −q) itd.
@@ -236,10 +238,12 @@ Dokument dla osoby, która nie robiła jeszcze mechaniki ani nawigacji inercyjne
 
 ## 6. Ryzyka i założenia, które mogą być błędne
 
-1. **Konwencje to błąd nr 1.** Akcelerometr Apple'a ekranem do góry daje z ≈ −1 g
-   (znak odwrotny do specific force z wyprowadzeń Madgwicka); kierunek `CMQuaternion`
-   trzeba ustalić eksperymentalnie; kolejność składowych różni się między bibliotekami;
-   three.js ma Y w górę, CoreMotion Z. Stąd kostka w etapie 3 i osobny etap 4.
+1. **Konwencje to błąd nr 1.** Hipoteza: akcelerometr Apple'a ekranem do góry daje
+   z ≈ −1 g (znak odwrotny do specific force z wyprowadzeń Madgwicka) — **DO WERYFIKACJI
+   w etapie 3** (testy V1–V7 w `conventions.md`). Tak samo kierunek `CMQuaternion`,
+   kierunek obrotu żyroskopu i to, czy oś Z w `xArbitraryZVertical` wskazuje w górę
+   (dokumentacja mówi tylko „pionowa”). Kolejność składowych różni się między bibliotekami;
+   three.js ma Y w górę. Stąd kostka w etapie 3 i osobny etap 4.
 2. **„Surowe” dane nie są do końca surowe.** Akcelerometr i żyroskop są po kalibracji
    fabrycznej. `gravity` i `userAcceleration` to wynik fuzji — nigdy jako wejście filtra.
    `rotationRate` z deviceMotion ma usunięty bias (ukrywa dryf) — tylko jako osobny eksperyment.
